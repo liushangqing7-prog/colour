@@ -7,7 +7,14 @@ async function postForm(path, formData) {
   })
 
   if (!res.ok) {
-    const message = await res.text()
+    const raw = await res.text()
+    let message = raw
+    try {
+      const parsed = JSON.parse(raw)
+      message = parsed?.detail || raw
+    } catch {
+      // ignore json parse error and keep raw text message
+    }
     throw new Error(message || 'Request failed')
   }
 

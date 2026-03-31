@@ -31,13 +31,17 @@ app.add_middleware(
 
 
 async def read_image(file: UploadFile) -> np.ndarray:
-    if file.content_type not in {"image/jpeg", "image/png"}:
-        raise HTTPException(status_code=400, detail="Only JPEG and PNG are supported")
     data = await file.read()
     try:
-        img = Image.open(BytesIO(data)).convert("RGB")
+        source = Image.open(BytesIO(data))
+        image_format = (source.format or "").upper()
+        if image_format not in {"JPEG", "PNG"}:
+            raise HTTPException(status_code=400, detail="Only JPEG and PNG are supported")
+        img = source.convert("RGB")
         return np.array(img)
     except Exception as exc:
+        if isinstance(exc, HTTPException):
+            raise exc
         raise HTTPException(status_code=400, detail="Invalid image file") from exc
 
 
