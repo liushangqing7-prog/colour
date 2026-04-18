@@ -1,119 +1,44 @@
-# 图片颜色提取 + 色彩调整网站（React + FastAPI）
+# Colour AAA
 
-这是一个完整的前后端分离项目，专注于：
+纯前端在线色彩处理工具（电脑端优化），支持颜色提取、调色、风格迁移与导出。
 
-- 上传 JPEG/PNG 图片并预览
-- 主色提取（K-Means / Mean Shift / Histogram）
-- 色彩调整（HSV/HSL 的 Hue/Saturation/Value，Lab a/b 微调）
-- Reinhard 色彩迁移（目标色板/目标图片）
-- 调整前后对比、颜色复制、色板下载、结果图下载
+## 运行方式
 
----
-
-## 目录结构
-
-```text
-.
-├── backend/
-│   ├── app/
-│   │   ├── color_algorithms.py
-│   │   ├── main.py
-│   │   └── schemas.py
-│   └── requirements.txt
-└── frontend/
-    ├── src/
-    │   ├── api/client.js
-    │   ├── components/ColorSwatches.jsx
-    │   ├── components/ImageCompare.jsx
-    │   ├── App.jsx
-    │   ├── main.jsx
-    │   └── index.css
-    ├── index.html
-    ├── package.json
-    ├── postcss.config.js
-    ├── tailwind.config.js
-    └── vite.config.js
-```
-
----
-
-## 后端（FastAPI）
-
-### 安装
+1. 直接双击 `index.html` 用浏览器打开（推荐 Chrome / Edge 最新版）。
+2. 或使用静态服务器：
 
 ```bash
-cd backend
-python -m venv .venv
-source .venv/bin/activate  # Windows: .venv\\Scripts\\activate
-pip install -r requirements.txt
+python -m http.server 8080
 ```
 
-### 启动
+然后访问 `http://localhost:8080`。
 
-```bash
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
-```
+## 功能概览
 
-### API 接口
+- **颜色提取**
+  - K-Means 主色提取（可调 K 值，支持 RGB/Lab）
+  - Mean Shift 自动颜色簇提取
+  - RGB 颜色直方图分析
+  - PCA 主成分颜色分析
+  - 聚类 + 面积筛选保留主要颜色块
+- **色彩调整**
+  - HSV/HSL 实时滑块调节
+  - Lab（L/a/b）微调
+  - 线性/非线性色彩变换（增益 + Gamma + Filmic 曲线）
+  - Reinhard 色彩迁移（需目标图）
+- **高级功能**
+  - TensorFlow.js 简易深度学习风格迁移（通道统计 AdaIN-like）
+  - 色板复制、结果图片下载
+  - 明暗主题切换
 
-- `POST /api/extract-colors`
-  - form-data: `file`, `algorithm(kmeans|meanshift|histogram)`, `n_colors`
-- `POST /api/adjust-hsv`
-  - form-data: `file`, `hue_shift`, `sat_scale`, `value_scale`, `mode(HSV|HSL)`
-- `POST /api/adjust-lab`
-  - form-data: `file`, `a_shift`, `b_shift`
-- `POST /api/reinhard-transfer`
-  - form-data: `source_file`, `target_file`
+## 技术栈
 
----
+- HTML5 + TailwindCSS + JavaScript
+- OpenCV.js（库引入，前端图像处理生态兼容）
+- TensorFlow.js（简易风格迁移）
 
-## 前端（React + Vite + Tailwind）
+## 使用建议
 
-### 安装
-
-```bash
-cd frontend
-npm install
-```
-
-### 启动
-
-```bash
-npm run dev
-```
-
-默认请求后端 `http://localhost:8000`。如需修改：
-
-```bash
-# frontend/.env
-VITE_API_BASE=http://localhost:8000
-```
-
----
-
-## 算法说明（核心函数）
-
-- `extract_colors_kmeans(img)`：K-Means 聚类提取主色
-- `extract_colors_meanshift(img)`：Mean Shift 聚类提取主色
-- `extract_colors_histogram(img)`：RGB 直方图峰值分析提色
-- `adjust_hue_saturation(img, hue_shift, sat_scale, value_scale)`：HSV/HSL 调整
-- `adjust_lab_channels(img, a_shift, b_shift)`：Lab 通道微调
-- `reinhard_color_transfer(source_img, target_img)`：Reinhard 色彩迁移
-
----
-
-## 功能使用流程
-
-1. 上传源图片（可选再上传 Reinhard 目标图片）
-2. 在“颜色提取”区域选择算法并提取颜色
-3. 在“色彩调整”区域调节 Hue/Saturation/Value 或 Lab a/b
-4. 点击对应按钮执行处理，查看前后对比图
-5. 点击色块复制颜色值，下载色板，下载调整后结果图
-
----
-
-## 依赖
-
-- 后端：FastAPI, OpenCV, NumPy, scikit-learn, Pillow
-- 前端：React, Vite, Tailwind CSS
-
+- 先上传高质量原图，再运行颜色提取模块获得稳定色板。
+- Reinhard 和 DL 风格迁移建议使用主题鲜明的目标图。
+- 图片越大，Mean Shift 和迁移计算耗时越高，必要时可先缩放。
